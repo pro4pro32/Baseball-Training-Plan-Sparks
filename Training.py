@@ -317,84 +317,144 @@ if st.button(t["button"], type="primary", use_container_width=True):
     st.markdown("- Always warm up 8-12 min\n- Listen to your arm\n- Sleep + protein")
     st.warning(t["disclaimer"])
 
-    # ====================== PDF – MAKSYMALNIE BEZPIECZNY ======================
+    # ====================== PDF – CZYTELNY I PORZĄDNY ======================
     def safe(text):
-        """Usuwa wszystkie nie-ASCII znaki"""
         return str(text).encode("ascii", errors="ignore").decode("ascii")
 
     class PDF(FPDF):
         def header(self):
-            self.set_font("Helvetica", "B", 16)
-            self.cell(0, 10, "Baseball Training Plan", align="C", new_x="LMARGIN", new_y="NEXT")
+            self.set_font("Helvetica", "B", 18)
+            self.cell(0, 12, "Baseball Training Plan", align="C", new_x="LMARGIN", new_y="NEXT")
             self.set_font("Helvetica", "", 10)
-            self.cell(0, 8, datetime.now().strftime("%Y-%m-%d"), align="C", new_x="LMARGIN", new_y="NEXT")
-            self.ln(5)
+            self.cell(0, 8, f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M')}", align="C", new_x="LMARGIN", new_y="NEXT")
+            self.ln(4)
+            # cienka linia pod nagłówkiem
+            self.set_draw_color(180, 180, 180)
+            self.line(10, self.get_y(), 200, self.get_y())
+            self.ln(8)
 
         def footer(self):
             self.set_y(-15)
             self.set_font("Helvetica", "I", 8)
-            self.cell(0, 10, f"Page {self.page_no()}", align="C")
+            self.set_text_color(120, 120, 120)
+            self.cell(0, 10, f"Page {self.page_no()}/{{nb}}  |  Amateur Club Training Plan", align="C")
+
+        def section_title(self, title):
+            self.set_font("Helvetica", "B", 13)
+            self.set_text_color(30, 30, 30)
+            self.cell(0, 9, title, new_x="LMARGIN", new_y="NEXT")
+            self.set_draw_color(50, 50, 50)
+            self.line(10, self.get_y(), 60, self.get_y())
+            self.ln(4)
+
+        def body_text(self, text, size=11):
+            self.set_font("Helvetica", "", size)
+            self.set_text_color(40, 40, 40)
+            self.multi_cell(0, 6.5, text)
+            self.ln(1)
 
     pdf = PDF()
+    pdf.alias_nb_pages()
+    pdf.set_auto_page_break(auto=True, margin=18)
     pdf.add_page()
-    pdf.set_auto_page_break(auto=True, margin=15)
-    pdf.set_font("Helvetica", size=11)
+    pdf.set_margins(12, 12, 12)
 
-    W = 190
+    # --- 1. DANE ZAWODNIKA ---
+    pdf.section_title("1. PLAYER INFORMATION")
 
-    # Mapowania na czysty angielski
     pos_en = {
-        "Pitcher (miotacz)": "Pitcher", "Catcher (łapacz)": "Catcher",
-        "Infielder (wewnętrzny)": "Infielder", "Outfielder (zapolowy)": "Outfielder"
+        "Pitcher (miotacz)": "Pitcher",
+        "Catcher (łapacz)": "Catcher",
+        "Infielder (wewnętrzny)": "Infielder",
+        "Outfielder (zapolowy)": "Outfielder"
     }.get(pozycja, safe(pozycja))
 
     gender_en = {"Mężczyzna": "Male", "Kobieta": "Female"}.get(plec, safe(plec))
 
-    pdf.multi_cell(W, 7, f"Position: {pos_en}")
-    pdf.multi_cell(W, 7, f"Age / Gender: {wiek} / {gender_en}")
-    pdf.multi_cell(W, 7, f"Height / Weight: {wzrost} cm / {waga} kg")
-    pdf.multi_cell(W, 7, f"Goal: {safe(cel)}")
-    pdf.multi_cell(W, 7, f"Intensity: {safe(intensywnosc)}")
-    pdf.multi_cell(W, 7, f"Weekly time: {czas_tyg} min ({sesje} sessions)")
-    pdf.multi_cell(W, 7, f"Playing days: {safe(', '.join(dni_gry)) if dni_gry else '-'}")
-    pdf.multi_cell(W, 7, f"Arm condition: {safe(stan_reki)}")
-    pdf.ln(6)
+    info_lines = [
+        f"Position:           {pos_en}",
+        f"Age / Gender:       {wiek} years / {gender_en}",
+        f"Height / Weight:    {wzrost} cm / {waga} kg",
+        f"Main Goal:          {safe(cel)}",
+        f"Intensity:          {safe(intensywnosc)}",
+        f"Weekly Time:        {czas_tyg} minutes ({sesje} sessions)",
+        f"Playing Days:       {safe(', '.join(dni_gry)) if dni_gry else 'None selected'}",
+        f"Arm Condition:      {safe(stan_reki)}"
+    ]
 
-    pdf.set_font("Helvetica", "B", 12)
-    pdf.multi_cell(W, 7, "Weekly Plan")
-    pdf.set_font("Helvetica", size=11)
-    for line in plan_for_pdf:
-        pdf.multi_cell(W, 6, f"- {safe(line)}")
+    for line in info_lines:
+        pdf.body_text(line)
+
+    pdf.ln(4)
+
+    # --- 2. FOKUS ---
+    pdf.section_title("2. TRAINING FOCUS")
+    pdf.body_text(safe(focus))
+    pdf.ln(3)
+
+    # --- 3. PLAN TYGODNIOWY ---
+    pdf.section_title("3. WEEKLY SCHEDULE")
+
+    for i, day in enumerate(training_days):
+        pdf.set_font("Helvetica", "B", 11)
+        pdf.cell(0, 7, f"{day}  (~{dlugosc} min)", new_x="LMARGIN", new_y="NEXT")
+
+        pdf.set_font("Helvetica", "", 10)
+        if i % 2 == 0:
+            pdf.multi_cell(0, 6, f"   Strength focus  |  {serie_info}")
+            for ex in selected[:6]:
+                pdf.multi_cell(0, 5.5, f"   - {safe(ex)}")
+        else:
+            pdf.multi_cell(0, 6, "   Conditioning + Mobility")
+            if has_cardio:
+                pdf.multi_cell(0, 5.5, "   - Easy run / bike / walk 15-25 min")
+            pdf.multi_cell(0, 5.5, "   - Dynamic mobility + core work")
+        pdf.ln(2)
+
+    if dni_gry:
+        pdf.ln(2)
+        pdf.set_font("Helvetica", "I", 10)
+        pdf.multi_cell(0, 6, f"Note: On playing days ({safe(', '.join(dni_gry))}) - only light mobility and recovery.")
 
     pdf.ln(5)
-    pdf.set_font("Helvetica", "B", 12)
-    pdf.multi_cell(W, 7, "Exercises (with video links)")
-    pdf.set_font("Helvetica", size=10)
+
+    # --- 4. ĆWICZENIA + LINKI ---
+    pdf.section_title("4. EXERCISE LIBRARY + VIDEO LINKS")
 
     for ex in selected:
         if ex in EXERCISES:
-            pdf.multi_cell(W, 6, safe(ex))
-            # bardzo krótki, bezpieczny opis
-            short_desc = safe(EXERCISES[ex]["en"][:80])
-            pdf.multi_cell(W, 5, f"   {short_desc}")
-            # link bez żadnych specjalnych znaków
-            yt_safe = safe(EXERCISES[ex]["yt"])
-            pdf.multi_cell(W, 5, f"   Video: {yt_safe}")
+            pdf.set_font("Helvetica", "B", 10)
+            pdf.multi_cell(0, 6, safe(ex))
+
+            pdf.set_font("Helvetica", "", 9)
+            short = safe(EXERCISES[ex]["en"])
+            pdf.multi_cell(0, 5, f"   {short}")
+
+            pdf.set_text_color(0, 80, 180)
+            pdf.multi_cell(0, 5, f"   Video: {safe(EXERCISES[ex]['yt'])}")
+            pdf.set_text_color(40, 40, 40)
             pdf.ln(2)
 
-    pdf.ln(5)
-    pdf.set_font("Helvetica", "I", 9)
-    pdf.multi_cell(W, 6, "This is a simplified plan. Consult a coach or physiotherapist.")
+    pdf.ln(4)
 
+    # --- 5. UWAGI ---
+    pdf.section_title("5. IMPORTANT NOTES")
+    notes = [
+        "- Always perform 8-12 minutes of dynamic warm-up before training.",
+        "- Listen to your body, especially your throwing arm.",
+        "- Prioritize sleep and protein intake for recovery.",
+        "- This is a general plan. Consult a coach or physiotherapist for individual needs."
+    ]
+    for note in notes:
+        pdf.body_text(note, size=10)
+
+    # Generowanie bajtów
     pdf_bytes = bytes(pdf.output())
 
     st.download_button(
         label=t["download_pdf"],
         data=pdf_bytes,
-        file_name=f"baseball_plan_{datetime.now().strftime('%Y%m%d')}.pdf",
+        file_name=f"baseball_plan_{datetime.now().strftime('%Y%m%d_%H%M')}.pdf",
         mime="application/pdf",
         use_container_width=True
     )
-
-else:
-    st.info(t["info"])
