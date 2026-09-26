@@ -293,9 +293,7 @@ if st.button(t["button"], type="primary", use_container_width=True):
         if has_bands:
             selected += ["Band Face Pulls", "Band External Rotations", "Band Rows"]
         if has_medball:
-            selected += ["Med Ball Rotational Throws", "Med Ball
-
-Slams"]
+            selected += ["Med Ball Rotational Throws", "Med Ball Slams"]
         if not has_weights and not has_bands:
             selected += ["Push-ups", "Inverted Rows"]
     elif has_bands:
