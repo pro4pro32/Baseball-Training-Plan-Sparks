@@ -125,7 +125,7 @@ EXERCISES = {
     },
     "Glute Bridge": {
         "pl": "Mostek biodrowy.",
-        "en": "Glute bridge – lie on back and drive hips up.",
+        "en": "Glute bridge - lie on back and drive hips up.",
         "yt": "https://www.youtube.com/watch?v=OUgsA8XiM_g"
     },
     "Dead Bug": {
@@ -135,7 +135,7 @@ EXERCISES = {
     },
     "Side Plank": {
         "pl": "Deska boczna.",
-        "en": "Side plank – hold body in straight line.",
+        "en": "Side plank - hold body in straight line.",
         "yt": "https://www.youtube.com/watch?v=XeN4pEZZJNI"
     },
     "Pallof Press": {
@@ -145,7 +145,7 @@ EXERCISES = {
     },
     "Band Face Pulls": {
         "pl": "Przyciąganie bandy do twarzy – ochrona barku.",
-        "en": "Band face pulls – rear delts + rotator cuff.",
+        "en": "Band face pulls - rear delts + rotator cuff.",
         "yt": "https://www.youtube.com/watch?v=Wq-Td9UXRK8"
     },
     "Band External Rotations": {
@@ -155,7 +155,7 @@ EXERCISES = {
     },
     "Band Rows": {
         "pl": "Wiosłowanie z bandą.",
-        "en": "Band rows – upper back.",
+        "en": "Band rows - upper back.",
         "yt": "https://www.youtube.com/watch?v=GZbfZ0338Zo"
     },
     "Med Ball Rotational Throws": {
@@ -304,27 +304,31 @@ if st.button(t["button"], type="primary", use_container_width=True):
         st.markdown("---")
         st.markdown(f"**Playing days ({', '.join(dni_gry)}):** only light mobility and recovery.")
 
-    # Słownik
+    # Słownik ćwiczeń
     st.subheader(t["library"])
     for ex in selected:
         if ex in EXERCISES:
             data = EXERCISES[ex]
             with st.expander(f"▶ {ex}"):
                 st.write(data["pl"] if lang == "Polski" else data["en"])
-                st.markdown(f"[🎬 YouTube]({data['yt']})")
+                st.markdown(f"[🎬 YouTube Tutorial]({data['yt']})")
 
     st.subheader(t["notes"])
     st.markdown("- Always warm up 8-12 min\n- Listen to your arm\n- Sleep + protein")
     st.warning(t["disclaimer"])
 
-    # ====================== PDF – TYLKO ANGIELSKI + STAŁA SZEROKOŚĆ ======================
+    # ====================== PDF – MAKSYMALNIE BEZPIECZNY ======================
+    def safe(text):
+        """Usuwa wszystkie nie-ASCII znaki"""
+        return str(text).encode("ascii", errors="ignore").decode("ascii")
+
     class PDF(FPDF):
         def header(self):
             self.set_font("Helvetica", "B", 16)
             self.cell(0, 10, "Baseball Training Plan", align="C", new_x="LMARGIN", new_y="NEXT")
             self.set_font("Helvetica", "", 10)
             self.cell(0, 8, datetime.now().strftime("%Y-%m-%d"), align="C", new_x="LMARGIN", new_y="NEXT")
-            self.ln(4)
+            self.ln(5)
 
         def footer(self):
             self.set_y(-15)
@@ -336,49 +340,51 @@ if st.button(t["button"], type="primary", use_container_width=True):
     pdf.set_auto_page_break(auto=True, margin=15)
     pdf.set_font("Helvetica", size=11)
 
-    # Mapowanie na czysty angielski (żeby uniknąć jakichkolwiek problemów ze znakami)
-    pos_map = {
+    W = 190
+
+    # Mapowania na czysty angielski
+    pos_en = {
         "Pitcher (miotacz)": "Pitcher", "Catcher (łapacz)": "Catcher",
-        "Infielder (wewnętrzny)": "Infielder", "Outfielder (zapolowy)": "Outfielder",
-        "Pitcher": "Pitcher", "Catcher": "Catcher", "Infielder": "Infielder", "Outfielder": "Outfielder"
-    }
-    gender_map = {"Mężczyzna": "Male", "Kobieta": "Female", "Male": "Male", "Female": "Female"}
+        "Infielder (wewnętrzny)": "Infielder", "Outfielder (zapolowy)": "Outfielder"
+    }.get(pozycja, safe(pozycja))
 
-    def safe(txt):
-        return str(txt).encode("ascii", errors="ignore").decode("ascii")
+    gender_en = {"Mężczyzna": "Male", "Kobieta": "Female"}.get(plec, safe(plec))
 
-    W = 190  # stała szerokość – kluczowe przeciwko błędowi
-
-    pdf.multi_cell(W, 7, f"Position: {pos_map.get(pozycja, safe(pozycja))}")
-    pdf.multi_cell(W, 7, f"Age / Gender: {wiek} / {gender_map.get(plec, safe(plec))}")
+    pdf.multi_cell(W, 7, f"Position: {pos_en}")
+    pdf.multi_cell(W, 7, f"Age / Gender: {wiek} / {gender_en}")
     pdf.multi_cell(W, 7, f"Height / Weight: {wzrost} cm / {waga} kg")
     pdf.multi_cell(W, 7, f"Goal: {safe(cel)}")
     pdf.multi_cell(W, 7, f"Intensity: {safe(intensywnosc)}")
     pdf.multi_cell(W, 7, f"Weekly time: {czas_tyg} min ({sesje} sessions)")
-    pdf.multi_cell(W, 7, f"Playing days: {safe(', '.join(dni_gry) if dni_gry else '-')}")
+    pdf.multi_cell(W, 7, f"Playing days: {safe(', '.join(dni_gry)) if dni_gry else '-'}")
     pdf.multi_cell(W, 7, f"Arm condition: {safe(stan_reki)}")
-    pdf.ln(5)
+    pdf.ln(6)
 
     pdf.set_font("Helvetica", "B", 12)
-    pdf.multi_cell(W, 7, "Weekly Plan:")
+    pdf.multi_cell(W, 7, "Weekly Plan")
     pdf.set_font("Helvetica", size=11)
     for line in plan_for_pdf:
         pdf.multi_cell(W, 6, f"- {safe(line)}")
 
-    pdf.ln(4)
+    pdf.ln(5)
     pdf.set_font("Helvetica", "B", 12)
-    pdf.multi_cell(W, 7, "Exercises + Video Links:")
+    pdf.multi_cell(W, 7, "Exercises (with video links)")
     pdf.set_font("Helvetica", size=10)
+
     for ex in selected:
         if ex in EXERCISES:
-            pdf.multi_cell(W, 6, f"{ex}")
-            pdf.multi_cell(W, 5, f"   {EXERCISES[ex]['en']}")
-            pdf.multi_cell(W, 5, f"   Video: {EXERCISES[ex]['yt']}")
+            pdf.multi_cell(W, 6, safe(ex))
+            # bardzo krótki, bezpieczny opis
+            short_desc = safe(EXERCISES[ex]["en"][:80])
+            pdf.multi_cell(W, 5, f"   {short_desc}")
+            # link bez żadnych specjalnych znaków
+            yt_safe = safe(EXERCISES[ex]["yt"])
+            pdf.multi_cell(W, 5, f"   Video: {yt_safe}")
             pdf.ln(2)
 
-    pdf.ln(4)
+    pdf.ln(5)
     pdf.set_font("Helvetica", "I", 9)
-    pdf.multi_cell(W, 6, "This is a simplified plan. Consult a coach or physiotherapist for personalized advice.")
+    pdf.multi_cell(W, 6, "This is a simplified plan. Consult a coach or physiotherapist.")
 
     pdf_bytes = bytes(pdf.output())
 
