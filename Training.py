@@ -27,23 +27,25 @@ T = {
         "days": "Dni gry w baseball",
         "days_list": ["Poniedziałek", "Wtorek", "Środa", "Czwartek", "Piątek", "Sobota", "Niedziela"],
         "equipment": "Dostępny sprzęt",
-        "equip_list": ["Resistance bands", "Medicine ball", "Weights / Gym", "Walking / Bike / Running"],
+        "equip_list": ["Gumy oporowe (Resistance bands)", "Piłka lekarska (Medicine ball)", "Ciężary / Siłownia", "Chodzenie / Rower / Bieganie"],
         "arm": "Stan ręki",
         "arm_options": ["Zdrowa", "Lekko obolała", "W regeneracji", "Silne ograniczenia"],
         "button": "Wygeneruj plan",
         "success": "Plan wygenerowany",
         "summary": "Podsumowanie",
-        "focus": "Fokus",
         "weekly": "Plan tygodniowy",
-        "notes": "Wskazówki",
+        "library": "Słownik ćwiczeń + filmiki",
         "disclaimer": "To uproszczony plan. Skonsultuj z trenerem.",
         "info": "Wypełnij dane i kliknij przycisk.",
         "download_pdf": "Pobierz PDF",
-        "library": "Słownik ćwiczeń + filmiki",
         "playing_days_label": "Dni gry",
         "arm_label": "Stan ręki",
         "time_label": "Czas",
         "sessions": "sesje",
+        "strength": "Siła",
+        "conditioning": "Kondycja + Mobilność",
+        "easy_cardio": "Lekki bieg / rower / spacer",
+        "mobility_core": "Mobilność + core",
     },
     "English": {
         "title": "⚾ Baseball Off-Field Training Plan",
@@ -71,17 +73,19 @@ T = {
         "button": "Generate plan",
         "success": "Plan generated",
         "summary": "Summary",
-        "focus": "Focus",
         "weekly": "Weekly plan",
-        "notes": "Notes",
+        "library": "Exercise library + videos",
         "disclaimer": "Simplified plan. Consult a coach.",
         "info": "Fill the form and click the button.",
         "download_pdf": "Download PDF",
-        "library": "Exercise library + videos",
         "playing_days_label": "Playing days",
         "arm_label": "Arm condition",
         "time_label": "Time",
         "sessions": "sessions",
+        "strength": "Strength",
+        "conditioning": "Conditioning + Mobility",
+        "easy_cardio": "Easy run / bike / walk",
+        "mobility_core": "Mobility + core",
     }
 }
 
@@ -94,27 +98,152 @@ DAY_MAP = {
     "Thursday": "Thursday", "Friday": "Friday", "Saturday": "Saturday", "Sunday": "Sunday"
 }
 
+# Klucze ćwiczeń po angielsku (do logiki), ale wyświetlamy przetłumaczone nazwy
 EXERCISES = {
-    "Goblet / Front Squat": {"pl": "Przysiad z ciężarem przy klatce.", "en": "Squat holding weight at chest.", "yt": "https://www.youtube.com/watch?v=zBV3ceGyAxw"},
-    "Romanian Deadlift": {"pl": "Martwy ciąg rumuński.", "en": "Hip-hinge for hamstrings and glutes.", "yt": "https://www.youtube.com/watch?v=2SHsk9AzdjA"},
-    "Bulgarian Split Squat": {"pl": "Przysiad bułgarski.", "en": "Rear-foot elevated split squat.", "yt": "https://www.youtube.com/watch?v=o7yFuIR9XVU"},
-    "Hip Thrust": {"pl": "Wypychanie bioder.", "en": "Hip extension for glutes.", "yt": "https://www.youtube.com/watch?v=SEdqd1n0cvg"},
-    "Bodyweight Squat": {"pl": "Przysiad z masą ciała.", "en": "Classic bodyweight squat.", "yt": "https://www.youtube.com/watch?v=aclHkVaku9U"},
-    "Reverse Lunges": {"pl": "Wykroki do tyłu.", "en": "Step-back lunges.", "yt": "https://www.youtube.com/watch?v=xr33x6zMQ9Q"},
-    "Single-leg RDL": {"pl": "Martwy ciąg na jednej nodze.", "en": "Single-leg Romanian deadlift.", "yt": "https://www.youtube.com/watch?v=4rE3sLq7Y4k"},
-    "Glute Bridge": {"pl": "Mostek biodrowy.", "en": "Glute bridge.", "yt": "https://www.youtube.com/watch?v=OUgsA8XiM_g"},
-    "Dead Bug": {"pl": "Ćwiczenie Dead Bug.", "en": "Core control exercise.", "yt": "https://www.youtube.com/watch?v=g_BYB0R-4Ws"},
-    "Side Plank": {"pl": "Deska boczna.", "en": "Side plank.", "yt": "https://www.youtube.com/watch?v=XeN4pEZZJNI"},
-    "Pallof Press": {"pl": "Pallof Press.", "en": "Anti-rotation core press.", "yt": "https://www.youtube.com/watch?v=5_8d8vHgZvU"},
-    "Band Face Pulls": {"pl": "Face Pulls z bandą.", "en": "Band face pulls for shoulders.", "yt": "https://www.youtube.com/watch?v=Wq-Td9UXRK8"},
-    "Band External Rotations": {"pl": "Zewnętrzna rotacja z bandą.", "en": "Band external rotation.", "yt": "https://www.youtube.com/watch?v=VjFVN0MBDh0"},
-    "Band Rows": {"pl": "Wiosłowanie z bandą.", "en": "Band rows.", "yt": "https://www.youtube.com/watch?v=GZbfZ0338Zo"},
-    "Med Ball Rotational Throws": {"pl": "Rzuty med ball w rotacji.", "en": "Rotational med ball throws.", "yt": "https://www.youtube.com/watch?v=1xqZf1zqZ2k"},
-    "Med Ball Slams": {"pl": "Uderzenia med ball.", "en": "Medicine ball slams.", "yt": "https://www.youtube.com/watch?v=2xX4zQ3zqZ0"},
-    "Dumbbell Shoulder Press": {"pl": "Wyciskanie hantli.", "en": "Dumbbell overhead press.", "yt": "https://www.youtube.com/watch?v=B-aVuyhvLNs"},
-    "Bent-over Row": {"pl": "Wiosłowanie w opadzie.", "en": "Bent-over row.", "yt": "https://www.youtube.com/watch?v=vT2GjY_Umpw"},
-    "Push-ups": {"pl": "Pompki.", "en": "Push-ups.", "yt": "https://www.youtube.com/watch?v=IODxDxX7oi4"},
-    "Inverted Rows": {"pl": "Podciąganie w poziomie.", "en": "Inverted rows.", "yt": "https://www.youtube.com/watch?v=TgxS_9M7yEw"},
+    "Goblet / Front Squat": {
+        "pl_name": "Goblet Squat / Przysiad z ciężarem",
+        "en_name": "Goblet / Front Squat",
+        "pl": "Przysiad z ciężarem trzymanym przy klatce.",
+        "en": "Squat holding weight at chest.",
+        "yt": "https://www.youtube.com/watch?v=zBV3ceGyAxw"
+    },
+    "Romanian Deadlift": {
+        "pl_name": "Martwy ciąg rumuński",
+        "en_name": "Romanian Deadlift",
+        "pl": "Martwy ciąg rumuński – tylny łańcuch.",
+        "en": "Hip-hinge for hamstrings and glutes.",
+        "yt": "https://www.youtube.com/watch?v=2SHsk9AzdjA"
+    },
+    "Bulgarian Split Squat": {
+        "pl_name": "Przysiad bułgarski",
+        "en_name": "Bulgarian Split Squat",
+        "pl": "Przysiad bułgarski – jedna noga z tyłu.",
+        "en": "Rear-foot elevated split squat.",
+        "yt": "https://www.youtube.com/watch?v=o7yFuIR9XVU"
+    },
+    "Hip Thrust": {
+        "pl_name": "Hip Thrust / Wypychanie bioder",
+        "en_name": "Hip Thrust",
+        "pl": "Wypychanie bioder – świetne na pośladki.",
+        "en": "Hip extension for glutes.",
+        "yt": "https://www.youtube.com/watch?v=SEdqd1n0cvg"
+    },
+    "Bodyweight Squat": {
+        "pl_name": "Przysiad z masą ciała",
+        "en_name": "Bodyweight Squat",
+        "pl": "Klasyczny przysiad bez obciążenia.",
+        "en": "Classic bodyweight squat.",
+        "yt": "https://www.youtube.com/watch?v=aclHkVaku9U"
+    },
+    "Reverse Lunges": {
+        "pl_name": "Wykroki do tyłu",
+        "en_name": "Reverse Lunges",
+        "pl": "Wykroki do tyłu – delikatniejsze dla kolan.",
+        "en": "Step-back lunges.",
+        "yt": "https://www.youtube.com/watch?v=xr33x6zMQ9Q"
+    },
+    "Single-leg RDL": {
+        "pl_name": "Martwy ciąg na jednej nodze",
+        "en_name": "Single-leg RDL",
+        "pl": "Martwy ciąg na jednej nodze.",
+        "en": "Single-leg Romanian deadlift.",
+        "yt": "https://www.youtube.com/watch?v=4rE3sLq7Y4k"
+    },
+    "Glute Bridge": {
+        "pl_name": "Mostek biodrowy",
+        "en_name": "Glute Bridge",
+        "pl": "Mostek biodrowy.",
+        "en": "Glute bridge.",
+        "yt": "https://www.youtube.com/watch?v=OUgsA8XiM_g"
+    },
+    "Dead Bug": {
+        "pl_name": "Dead Bug",
+        "en_name": "Dead Bug",
+        "pl": "Ćwiczenie stabilizujące core.",
+        "en": "Core control exercise.",
+        "yt": "https://www.youtube.com/watch?v=g_BYB0R-4Ws"
+    },
+    "Side Plank": {
+        "pl_name": "Deska boczna",
+        "en_name": "Side Plank",
+        "pl": "Deska boczna.",
+        "en": "Side plank.",
+        "yt": "https://www.youtube.com/watch?v=XeN4pEZZJNI"
+    },
+    "Pallof Press": {
+        "pl_name": "Pallof Press",
+        "en_name": "Pallof Press",
+        "pl": "Antyrotacyjne ćwiczenie core.",
+        "en": "Anti-rotation core press.",
+        "yt": "https://www.youtube.com/watch?v=5_8d8vHgZvU"
+    },
+    "Band Face Pulls": {
+        "pl_name": "Face Pulls z gumą",
+        "en_name": "Band Face Pulls",
+        "pl": "Face Pulls z gumą – ochrona barku.",
+        "en": "Band face pulls for shoulders.",
+        "yt": "https://www.youtube.com/watch?v=Wq-Td9UXRK8"
+    },
+    "Band External Rotations": {
+        "pl_name": "Zewnętrzna rotacja z gumą",
+        "en_name": "Band External Rotations",
+        "pl": "Zewnętrzna rotacja barku z gumą.",
+        "en": "Band external rotation.",
+        "yt": "https://www.youtube.com/watch?v=VjFVN0MBDh0"
+    },
+    "Band Rows": {
+        "pl_name": "Wiosłowanie z gumą",
+        "en_name": "Band Rows",
+        "pl": "Wiosłowanie z gumą.",
+        "en": "Band rows.",
+        "yt": "https://www.youtube.com/watch?v=GZbfZ0338Zo"
+    },
+    "Med Ball Rotational Throws": {
+        "pl_name": "Rzuty piłką lekarską w rotacji",
+        "en_name": "Med Ball Rotational Throws",
+        "pl": "Rzuty piłką lekarską w rotacji.",
+        "en": "Rotational med ball throws.",
+        "yt": "https://www.youtube.com/watch?v=1xqZf1zqZ2k"
+    },
+    "Med Ball
+
+Slams": {
+        "pl_name": "Uderzenia piłką lekarską",
+        "en_name": "Med Ball
+
+Slams",
+        "pl": "Uderzenia piłką lekarską o podłogę.",
+        "en": "Medicine ball slams.",
+        "yt": "https://www.youtube.com/watch?v=2xX4zQ3zqZ0"
+    },
+    "Dumbbell Shoulder Press": {
+        "pl_name": "Wyciskanie hantli nad głowę",
+        "en_name": "Dumbbell Shoulder Press",
+        "pl": "Wyciskanie hantli nad głowę.",
+        "en": "Dumbbell overhead press.",
+        "yt": "https://www.youtube.com/watch?v=B-aVuyhvLNs"
+    },
+    "Bent-over Row": {
+        "pl_name": "Wiosłowanie w opadzie",
+        "en_name": "Bent-over Row",
+        "pl": "Wiosłowanie w opadzie.",
+        "en": "Bent-over row.",
+        "yt": "https://www.youtube.com/watch?v=vT2GjY_Umpw"
+    },
+    "Push-ups": {
+        "pl_name": "Pompki",
+        "en_name": "Push-ups",
+        "pl": "Klasyczne pompki.",
+        "en": "Push-ups.",
+        "yt": "https://www.youtube.com/watch?v=IODxDxX7oi4"
+    },
+    "Inverted Rows": {
+        "pl_name": "Podciąganie w poziomie",
+        "en_name": "Inverted Rows",
+        "pl": "Podciąganie w poziomie.",
+        "en": "Inverted rows.",
+        "yt": "https://www.youtube.com/watch?v=TgxS_9M7yEw"
+    },
 }
 
 st.title(t["title"])
@@ -145,10 +274,11 @@ st.divider()
 
 if st.button(t["button"], type="primary", use_container_width=True):
 
-    has_bands = "Resistance bands" in sprzet
-    has_medball = "Medicine ball" in sprzet
-    has_weights = "Weights / Gym" in sprzet
-    has_cardio = "Walking / Bike / Running" in sprzet
+    # Logika sprzętu (sprawdzamy po fragmentach nazw)
+    has_bands = any("band" in s.lower() or "gumy" in s.lower() for s in sprzet)
+    has_medball = any("medicine" in s.lower() or "lekarska" in s.lower() or "med ball" in s.lower() for s in sprzet)
+    has_weights = any("weights" in s.lower() or "siłownia" in s.lower() or "ciężary" in s.lower() for s in sprzet)
+    has_cardio = any("walking" in s.lower() or "bike" in s.lower() or "running" in s.lower() or "chodzenie" in s.lower() or "rower" in s.lower() or "bieganie" in s.lower() for s in sprzet)
 
     sesje = 2 if czas_tyg < 120 else (3 if czas_tyg < 250 else 4)
     dlugosc = max(30, czas_tyg // sesje)
@@ -175,14 +305,22 @@ if st.button(t["button"], type="primary", use_container_width=True):
     elif has_bands:
         selected += ["Band Face Pulls", "Band External Rotations"]
 
-    if "Niska" in intensywnosc or "Low" in intensywnosc:
-        serie_info = "2 sets x 10-15 (light)" if lang == "English" else "2 serie x 10-15 (lekko)"
-    elif "Wysoka" in intensywnosc or "High" in intensywnosc:
-        serie_info = "4 sets x 5-8 (heavy)" if lang == "English" else "4 serie x 5-8 (ciężko)"
+    if lang == "Polski":
+        if intensywnosc == "Niska":
+            serie_info = "2 serie × 10-15 (lekko)"
+        elif intensywnosc == "Wysoka":
+            serie_info = "4 serie × 5-8 (ciężko)"
+        else:
+            serie_info = "3 serie × 8-12"
     else:
-        serie_info = "3 sets x 8-12" if lang == "English" else "3 serie x 8-12"
+        if intensywnosc == "Low":
+            serie_info = "2 sets × 10-15 (light)"
+        elif intensywnosc == "High":
+            serie_info = "4 sets × 5-8 (heavy)"
+        else:
+            serie_info = "3 sets × 8-12"
 
-    # ---------- WYŚWIETLENIE (w pełni przetłumaczone) ----------
+    # ---------- WYŚWIETLENIE ----------
     st.success(t["success"])
 
     st.subheader(t["summary"])
@@ -204,25 +342,27 @@ if st.button(t["button"], type="primary", use_container_width=True):
     for i, day in enumerate(training_days):
         st.markdown(f"**{day} (~{dlugosc} min)**")
         if i % 2 == 0:
-            st.write(f"Strength - {serie_info}" if lang == "English" else f"Siła - {serie_info}")
+            st.write(f"{t['strength']} - {serie_info}")
             for ex in selected[:6]:
-                st.write(f"- {ex}")
+                name = EXERCISES[ex]["pl_name"] if lang == "Polski" else EXERCISES[ex]["en_name"]
+                st.write(f"- {name}")
         else:
-            st.write("Conditioning + Mobility" if lang == "English" else "Kondycja + Mobilność")
+            st.write(t["conditioning"])
             if has_cardio:
-                st.write("- Easy run / bike / walk" if lang == "English" else "- Lekki bieg / rower / spacer")
-            st.write("- Mobility + core" if lang == "English" else "- Mobilność + core")
+                st.write(f"- {t['easy_cardio']}")
+            st.write(f"- {t['mobility_core']}")
 
     st.subheader(t["library"])
     for ex in selected:
         if ex in EXERCISES:
-            with st.expander(ex):
+            name = EXERCISES[ex]["pl_name"] if lang == "Polski" else EXERCISES[ex]["en_name"]
+            with st.expander(name):
                 st.write(EXERCISES[ex]["pl"] if lang == "Polski" else EXERCISES[ex]["en"])
                 st.markdown(f"[YouTube]({EXERCISES[ex]['yt']})")
 
     st.warning(t["disclaimer"])
 
-    # ====================== PDF (zostaje po angielsku - stabilne) ======================
+    # PDF zostaje po angielsku (działa stabilnie)
     def safe(txt):
         return str(txt).encode("ascii", "ignore").decode("ascii")
 
@@ -231,7 +371,6 @@ if st.button(t["button"], type="primary", use_container_width=True):
     pdf.set_auto_page_break(True, margin=15)
     pdf.set_margins(15, 15, 15)
     pdf.set_font("Helvetica", size=11)
-
     W = 180
 
     def write(txt, bold=False, size=11):
@@ -242,7 +381,6 @@ if st.button(t["button"], type="primary", use_container_width=True):
     write("BASEBALL TRAINING PLAN", bold=True, size=16)
     write(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M')}")
     write("")
-
     write("1. PLAYER INFORMATION", bold=True, size=13)
     write(f"Position: {safe(pozycja)}")
     write(f"Age / Gender: {wiek} / {safe(plec)}")
@@ -253,7 +391,6 @@ if st.button(t["button"], type="primary", use_container_width=True):
     write(f"Playing days: {safe(', '.join(dni_gry)) if dni_gry else 'None'}")
     write(f"Arm condition: {safe(stan_reki)}")
     write("")
-
     write("2. WEEKLY SCHEDULE", bold=True, size=13)
     for i, day in enumerate(training_days):
         day_en = DAY_MAP.get(day, safe(day))
@@ -261,22 +398,19 @@ if st.button(t["button"], type="primary", use_container_width=True):
         if i % 2 == 0:
             write(f"   Strength - {serie_info}")
             for ex in selected[:6]:
-                write(f"   - {safe(ex)}")
+                write(f"   - {safe(EXERCISES[ex]['en_name'])}")
         else:
             write("   Conditioning + Mobility")
             if has_cardio:
-                write("   - Easy cardio 15-25 min")
+                write("   - Easy cardio")
             write("   - Mobility + core")
         write("")
-
     write("3. EXERCISES + VIDEOS", bold=True, size=13)
     for ex in selected:
-        if ex in EXERCISES:
-            write(safe(ex), bold=True)
-            write(f"   {safe(EXERCISES[ex]['en'])}")
-            write(f"   Video: {safe(EXERCISES[ex]['yt'])}")
-            write("")
-
+        write(safe(EXERCISES[ex]["en_name"]), bold=True)
+        write(f"   {safe(EXERCISES[ex]['en'])}")
+        write(f"   Video: {safe(EXERCISES[ex]['yt'])}")
+        write("")
     write("4. NOTES", bold=True, size=13)
     write("- Always warm up 8-12 minutes")
     write("- Listen to your throwing arm")
