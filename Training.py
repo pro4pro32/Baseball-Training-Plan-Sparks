@@ -261,8 +261,17 @@ st.header(t["section2"])
 cel = st.selectbox(t["goal"], t["goals"])
 intensywnosc = st.selectbox(t["intensity"], t["intensities"])
 czas_tyg = st.number_input(t["time"], min_value=60, max_value=700, value=180, step=15)
-dni_gry = st.multiselect(t["days"], t["days_list"])
-sprzet = st.multiselect(t["equipment"], t["equip_list"])
+dni_gry = st.multiselect(
+    t["days"], 
+    t["days_list"], 
+    placeholder="Wybierz opcje" if lang == "Polski" else "Choose options"
+)
+
+sprzet = st.multiselect(
+    t["equipment"], 
+    t["equip_list"], 
+    placeholder="Wybierz opcje" if lang == "Polski" else "Choose options"
+)
 stan_reki = st.selectbox(t["arm"], t["arm_options"])
 
 st.divider()
