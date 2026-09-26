@@ -86,6 +86,14 @@ T = {
 
 t = T[lang]
 
+# Mapowanie dni na angielski (dla PDF)
+DAY_MAP = {
+    "Poniedziałek": "Monday", "Wtorek": "Tuesday", "Środa": "Wednesday",
+    "Czwartek": "Thursday", "Piątek": "Friday", "Sobota": "Saturday", "Niedziela": "Sunday",
+    "Monday": "Monday", "Tuesday": "Tuesday", "Wednesday": "Wednesday",
+    "Thursday": "Thursday", "Friday": "Friday", "Saturday": "Saturday", "Sunday": "Sunday"
+}
+
 # -------------------- SŁOWNIK ĆWICZEŃ --------------------
 EXERCISES = {
     "Goblet / Front Squat": {
@@ -263,7 +271,7 @@ if st.button(t["button"], type="primary", use_container_width=True):
     else:
         serie_info = "3 sets x 8-12 reps"
 
-    # ---------- WYŚWIETLENIE ----------
+    # ---------- WYŚWIETLENIE W APLIKACJI ----------
     st.success(t["success"])
 
     st.subheader(t["summary"])
@@ -292,13 +300,13 @@ if st.button(t["button"], type="primary", use_container_width=True):
             st.markdown(f"**Strength** – {serie_info}")
             for ex in selected[:6]:
                 st.markdown(f"- {ex}")
-                plan_for_pdf.append(f"{day}: {ex}")
+                plan_for_pdf.append((day, "Strength", ex))
         else:
             st.markdown("**Conditioning + Mobility**")
             if has_cardio:
                 st.markdown("- Easy run / bike / walk 15-25 min")
             st.markdown("- Dynamic mobility + core")
-            plan_for_pdf.append(f"{day}: Conditioning + Mobility")
+            plan_for_pdf.append((day, "Conditioning + Mobility", None))
 
     if dni_gry:
         st.markdown("---")
@@ -317,7 +325,7 @@ if st.button(t["button"], type="primary", use_container_width=True):
     st.markdown("- Always warm up 8-12 min\n- Listen to your arm\n- Sleep + protein")
     st.warning(t["disclaimer"])
 
-    # ====================== PDF – CZYTELNY I PORZĄDNY ======================
+    # ====================== PDF – CZYTELNY + BEZPIECZNY ======================
     def safe(text):
         return str(text).encode("ascii", errors="ignore").decode("ascii")
 
@@ -327,128 +335,109 @@ if st.button(t["button"], type="primary", use_container_width=True):
             self.cell(0, 12, "Baseball Training Plan", align="C", new_x="LMARGIN", new_y="NEXT")
             self.set_font("Helvetica", "", 10)
             self.cell(0, 8, f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M')}", align="C", new_x="LMARGIN", new_y="NEXT")
-            self.ln(4)
-            # cienka linia pod nagłówkiem
-            self.set_draw_color(180, 180, 180)
-            self.line(10, self.get_y(), 200, self.get_y())
+            self.ln(3)
+            self.set_draw_color(150, 150, 150)
+            self.line(12, self.get_y(), 198, self.get_y())
             self.ln(8)
 
         def footer(self):
             self.set_y(-15)
             self.set_font("Helvetica", "I", 8)
-            self.set_text_color(120, 120, 120)
-            self.cell(0, 10, f"Page {self.page_no()}/{{nb}}  |  Amateur Club Training Plan", align="C")
+            self.set_text_color(100, 100, 100)
+            self.cell(0, 10, f"Page {self.page_no()}/{{nb}}  |  Amateur Baseball Club", align="C")
 
         def section_title(self, title):
             self.set_font("Helvetica", "B", 13)
-            self.set_text_color(30, 30, 30)
+            self.set_text_color(20, 20, 20)
             self.cell(0, 9, title, new_x="LMARGIN", new_y="NEXT")
-            self.set_draw_color(50, 50, 50)
-            self.line(10, self.get_y(), 60, self.get_y())
-            self.ln(4)
-
-        def body_text(self, text, size=11):
-            self.set_font("Helvetica", "", size)
-            self.set_text_color(40, 40, 40)
-            self.multi_cell(0, 6.5, text)
-            self.ln(1)
+            self.set_draw_color(40, 40, 40)
+            self.line(12, self.get_y(), 70, self.get_y())
+            self.ln(5)
 
     pdf = PDF()
     pdf.alias_nb_pages()
     pdf.set_auto_page_break(auto=True, margin=18)
     pdf.add_page()
     pdf.set_margins(12, 12, 12)
+    pdf.set_font("Helvetica", size=11)
 
-    # --- 1. DANE ZAWODNIKA ---
+    # 1. PLAYER INFO
     pdf.section_title("1. PLAYER INFORMATION")
 
     pos_en = {
-        "Pitcher (miotacz)": "Pitcher",
-        "Catcher (łapacz)": "Catcher",
-        "Infielder (wewnętrzny)": "Infielder",
-        "Outfielder (zapolowy)": "Outfielder"
-    }.get(pozycja, safe(pozycja))
+        "Pitcher (miotacz)": "Pitcher", "Catcher (łapacz)": "Catcher",
+        "Infielder (wewnętrzny)": "Infielder", "Outfielder (zapolowy)": "Outfielder",
+        "Pitcher": "Pitcher", "Catcher": "Catcher", "Infielder": "Infielder", "Outfielder": "Outfielder"
+    }.get(pozycja, "Player")
 
-    gender_en = {"Mężczyzna": "Male", "Kobieta": "Female"}.get(plec, safe(plec))
+    gender_en = {"Mężczyzna": "Male", "Kobieta": "Female", "Male": "Male", "Female": "Female"}.get(plec, "Male")
 
-    info_lines = [
-        f"Position:           {pos_en}",
-        f"Age / Gender:       {wiek} years / {gender_en}",
-        f"Height / Weight:    {wzrost} cm / {waga} kg",
-        f"Main Goal:          {safe(cel)}",
-        f"Intensity:          {safe(intensywnosc)}",
-        f"Weekly Time:        {czas_tyg} minutes ({sesje} sessions)",
-        f"Playing Days:       {safe(', '.join(dni_gry)) if dni_gry else 'None selected'}",
-        f"Arm Condition:      {safe(stan_reki)}"
-    ]
-
-    for line in info_lines:
-        pdf.body_text(line)
-
+    pdf.set_font("Helvetica", size=11)
+    pdf.multi_cell(0, 7, f"Position:          {pos_en}")
+    pdf.multi_cell(0, 7, f"Age / Gender:      {wiek} / {gender_en}")
+    pdf.multi_cell(0, 7, f"Height / Weight:   {wzrost} cm / {waga} kg")
+    pdf.multi_cell(0, 7, f"Main Goal:         {safe(cel)}")
+    pdf.multi_cell(0, 7, f"Intensity:         {safe(intensywnosc)}")
+    pdf.multi_cell(0, 7, f"Weekly Time:       {czas_tyg} min ({sesje} sessions)")
+    pdf.multi_cell(0, 7, f"Playing Days:      {', '.join([DAY_MAP.get(d, d) for d in dni_gry]) if dni_gry else 'None'}")
+    pdf.multi_cell(0, 7, f"Arm Condition:     {safe(stan_reki)}")
     pdf.ln(4)
 
-    # --- 2. FOKUS ---
+    # 2. FOCUS
     pdf.section_title("2. TRAINING FOCUS")
-    pdf.body_text(safe(focus))
+    pdf.multi_cell(0, 7, safe(focus))
     pdf.ln(3)
 
-    # --- 3. PLAN TYGODNIOWY ---
+    # 3. WEEKLY SCHEDULE
     pdf.section_title("3. WEEKLY SCHEDULE")
 
     for i, day in enumerate(training_days):
+        day_en = DAY_MAP.get(day, safe(day))
         pdf.set_font("Helvetica", "B", 11)
-        pdf.cell(0, 7, f"{day}  (~{dlugosc} min)", new_x="LMARGIN", new_y="NEXT")
+        pdf.cell(0, 8, f"{day_en}  (~{dlugosc} min)", new_x="LMARGIN", new_y="NEXT")
 
-        pdf.set_font("Helvetica", "", 10)
+        pdf.set_font("Helvetica", size=10)
         if i % 2 == 0:
-            pdf.multi_cell(0, 6, f"   Strength focus  |  {serie_info}")
+            pdf.multi_cell(0, 6, f"   Type: Strength   |   {serie_info}")
             for ex in selected[:6]:
                 pdf.multi_cell(0, 5.5, f"   - {safe(ex)}")
         else:
-            pdf.multi_cell(0, 6, "   Conditioning + Mobility")
+            pdf.multi_cell(0, 6, "   Type: Conditioning + Mobility")
             if has_cardio:
                 pdf.multi_cell(0, 5.5, "   - Easy run / bike / walk 15-25 min")
             pdf.multi_cell(0, 5.5, "   - Dynamic mobility + core work")
-        pdf.ln(2)
+        pdf.ln(3)
 
     if dni_gry:
-        pdf.ln(2)
         pdf.set_font("Helvetica", "I", 10)
-        pdf.multi_cell(0, 6, f"Note: On playing days ({safe(', '.join(dni_gry))}) - only light mobility and recovery.")
+        days_str = ", ".join([DAY_MAP.get(d, d) for d in dni_gry])
+        pdf.multi_cell(0, 6, f"Note: On playing days ({days_str}) do only light mobility and recovery.")
+        pdf.ln(3)
 
-    pdf.ln(5)
-
-    # --- 4. ĆWICZENIA + LINKI ---
+    # 4. EXERCISES
     pdf.section_title("4. EXERCISE LIBRARY + VIDEO LINKS")
 
     for ex in selected:
         if ex in EXERCISES:
             pdf.set_font("Helvetica", "B", 10)
             pdf.multi_cell(0, 6, safe(ex))
-
-            pdf.set_font("Helvetica", "", 9)
-            short = safe(EXERCISES[ex]["en"])
-            pdf.multi_cell(0, 5, f"   {short}")
-
-            pdf.set_text_color(0, 80, 180)
+            pdf.set_font("Helvetica", size=9)
+            pdf.multi_cell(0, 5, f"   {safe(EXERCISES[ex]['en'])}")
+            pdf.set_text_color(0, 70, 160)
             pdf.multi_cell(0, 5, f"   Video: {safe(EXERCISES[ex]['yt'])}")
-            pdf.set_text_color(40, 40, 40)
+            pdf.set_text_color(0, 0, 0)
             pdf.ln(2)
 
-    pdf.ln(4)
+    pdf.ln(3)
 
-    # --- 5. UWAGI ---
+    # 5. NOTES
     pdf.section_title("5. IMPORTANT NOTES")
-    notes = [
-        "- Always perform 8-12 minutes of dynamic warm-up before training.",
-        "- Listen to your body, especially your throwing arm.",
-        "- Prioritize sleep and protein intake for recovery.",
-        "- This is a general plan. Consult a coach or physiotherapist for individual needs."
-    ]
-    for note in notes:
-        pdf.body_text(note, size=10)
+    pdf.set_font("Helvetica", size=10)
+    pdf.multi_cell(0, 6, "- Always perform 8-12 minutes of dynamic warm-up.")
+    pdf.multi_cell(0, 6, "- Listen carefully to your throwing arm.")
+    pdf.multi_cell(0, 6, "- Prioritize sleep and protein for recovery.")
+    pdf.multi_cell(0, 6, "- This is a general plan. Consult a coach or physiotherapist when needed.")
 
-    # Generowanie bajtów
     pdf_bytes = bytes(pdf.output())
 
     st.download_button(
@@ -458,3 +447,6 @@ if st.button(t["button"], type="primary", use_container_width=True):
         mime="application/pdf",
         use_container_width=True
     )
+
+else:
+    st.info(t["info"])
