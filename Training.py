@@ -1,7 +1,6 @@
 import streamlit as st
 from fpdf import FPDF
 from datetime import datetime
-import io
 
 st.set_page_config(
     page_title="Baseball Training Plan / Plan Treningowy Baseball",
@@ -46,7 +45,7 @@ T = {
         "disclaimer": "To uproszczony plan. Nie zastępuje konsultacji z trenerem lub fizjoterapeutą.",
         "info": "Wypełnij dane i kliknij przycisk, aby wygenerować plan.",
         "download_pdf": "Pobierz plan w PDF",
-        "pdf_title": "Plan Treningowy Baseball",
+        "library": "Słownik ćwiczeń + filmiki (kliknij, żeby rozwinąć)",
     },
     "English": {
         "title": "⚾ Baseball Off-Field Training Plan",
@@ -81,17 +80,121 @@ T = {
         "disclaimer": "This is a simplified plan. It does not replace advice from a coach or physiotherapist.",
         "info": "Fill in the data and click the button to generate the plan.",
         "download_pdf": "Download plan as PDF",
-        "pdf_title": "Baseball Training Plan",
+        "library": "Exercise library + videos (click to expand)",
     }
 }
 
 t = T[lang]
 
+# -------------------- SŁOWNIK ĆWICZEŃ --------------------
+EXERCISES = {
+    "Goblet / Front Squat": {
+        "pl": "Przysiad z ciężarem trzymanym przy klatce piersiowej. Świetny na nogi i core, bezpieczniejszy dla kręgosłupa.",
+        "en": "Squat holding a weight at chest level. Great for legs and core, spine-friendly.",
+        "yt": "https://www.youtube.com/watch?v=zBV3ceGyAxw"
+    },
+    "Romanian Deadlift": {
+        "pl": "Martwy ciąg rumuński – skupia się na tylnym łańcuchu (dwugłowe uda + pośladki). Biodra do tyłu, plecy proste.",
+        "en": "Hip-hinge movement targeting hamstrings and glutes. Push hips back, keep back flat.",
+        "yt": "https://www.youtube.com/watch?v=2SHsk9AzdjA"
+    },
+    "Bulgarian Split Squat": {
+        "pl": "Przysiad bułgarski – jedna noga z tyłu na ławce. Buduje siłę i stabilność jednonóż.",
+        "en": "Rear foot elevated split squat. Builds single-leg strength and balance.",
+        "yt": "https://www.youtube.com/watch?v=o7yFuIR9XVU"
+    },
+    "Hip Thrust": {
+        "pl": "Wypychanie bioder w górę z górną częścią pleców na ławce. Najlepsze ćwiczenie na pośladki.",
+        "en": "Hip extension with upper back on a bench. Best glute builder.",
+        "yt": "https://www.youtube.com/watch?v=SEdqd1n0cvg"
+    },
+    "Bodyweight Squat": {
+        "pl": "Klasyczny przysiad z masą ciała. Podstawa siły nóg.",
+        "en": "Classic bodyweight squat. Foundation of leg strength.",
+        "yt": "https://www.youtube.com/watch?v=aclHkVaku9U"
+    },
+    "Reverse Lunges": {
+        "pl": "Wykroki do tyłu – delikatniejsze dla kolan niż wykroki do przodu.",
+        "en": "Step backward into a lunge. Kinder on the knees.",
+        "yt": "https://www.youtube.com/watch?v=xr33x6zMQ9Q"
+    },
+    "Single-leg RDL": {
+        "pl": "Martwy ciąg na jednej nodze – równowaga + tylny łańcuch.",
+        "en": "Single-leg Romanian deadlift – balance + posterior chain.",
+        "yt": "https://www.youtube.com/watch?v=4rE3sLq7Y4k"
+    },
+    "Glute Bridge": {
+        "pl": "Mostek biodrowy – leżąc na plecach wypychasz biodra w górę.",
+        "en": "Lying on your back, drive hips up by squeezing glutes.",
+        "yt": "https://www.youtube.com/watch?v=OUgsA8XiM_g"
+    },
+    "Dead Bug": {
+        "pl": "Leżąc na plecach naprzemiennie prostujesz przeciwległą rękę i nogę. Świetna stabilizacja core.",
+        "en": "Lie on back, extend opposite arm and leg while keeping lower back flat. Excellent core control.",
+        "yt": "https://www.youtube.com/watch?v=g_BYB0R-4Ws"
+    },
+    "Side Plank": {
+        "pl": "Deska boczna – utrzymuj ciało w linii prostej na boku.",
+        "en": "Hold body in a straight line on one side. Great for obliques.",
+        "yt": "https://www.youtube.com/watch?v=XeN4pEZZJNI"
+    },
+    "Pallof Press": {
+        "pl": "Antyrotacyjne ćwiczenie core – wypychasz linkę/bandę przed siebie i opierasz się skręcaniu.",
+        "en": "Anti-rotation core exercise. Press band/cable straight out and resist twisting.",
+        "yt": "https://www.youtube.com/watch?v=5_8d8vHgZvU"
+    },
+    "Band Face Pulls": {
+        "pl": "Przyciąganie bandy do twarzy – wzmacnia tylne aktony barków i rotatory (prewencja urazów barku).",
+        "en": "Pull band toward face. Strengthens rear delts and rotator cuff – key for shoulder health.",
+        "yt": "https://www.youtube.com/watch?v=Wq-Td9UXRK8"
+    },
+    "Band External Rotations": {
+        "pl": "Zewnętrzna rotacja barku z bandą – ochrona stożka rotatorów.",
+        "en": "External rotation of the shoulder with band – protects the rotator cuff.",
+        "yt": "https://www.youtube.com/watch?v=VjFVN0MBDh0"
+    },
+    "Band Rows": {
+        "pl": "Wiosłowanie z bandą – buduje mięśnie pleców i stabilizację łopatki.",
+        "en": "Band row – builds upper back and scapular stability.",
+        "yt": "https://www.youtube.com/watch?v=GZbfZ0338Zo"
+    },
+    "Med Ball Rotational Throws": {
+        "pl": "Rzuty piłką lekarską w rotacji – rozwija moc rotacyjną (ważne dla baseballu).",
+        "en": "Rotational medicine ball throws – develops rotational power crucial for baseball.",
+        "yt": "https://www.youtube.com/watch?v=1xqZf1zqZ2k"
+    },
+    "Med Ball Slams": {
+        "pl": "Uderzenia piłką lekarską w podłogę – moc i eksplozywność całego ciała.",
+        "en": "Slam the medicine ball into the ground – full-body power.",
+        "yt": "https://www.youtube.com/watch?v=2xX4zQ3zqZ0"
+    },
+    "Dumbbell Shoulder Press": {
+        "pl": "Wyciskanie hantli nad głowę – siła barków (ostrożnie przy problemach z ręką).",
+        "en": "Overhead press with dumbbells – shoulder strength (careful with arm issues).",
+        "yt": "https://www.youtube.com/watch?v=B-aVuyhvLNs"
+    },
+    "Bent-over Row": {
+        "pl": "Wiosłowanie w opadzie – buduje grubość pleców.",
+        "en": "Bent-over row – builds back thickness.",
+        "yt": "https://www.youtube.com/watch?v=vT2GjY_Umpw"
+    },
+    "Push-ups": {
+        "pl": "Klasyczne pompki – siła klatki, tricepsów i core.",
+        "en": "Classic push-ups – chest, triceps and core strength.",
+        "yt": "https://www.youtube.com/watch?v=IODxDxX7oi4"
+    },
+    "Inverted Rows": {
+        "pl": "Podciąganie w poziomie (np. pod stołem) – zamiennik podciągania.",
+        "en": "Horizontal pulling (under a table/bar) – great pull-up alternative.",
+        "yt": "https://www.youtube.com/watch?v=TgxS_9M7yEw"
+    },
+}
+
 st.title(t["title"])
 st.markdown(f"**{t['subtitle']}**")
 st.divider()
 
-# ====================== SEKCJA 1: DANE ZAWODNIKA ======================
+# ====================== SEKCJA 1 ======================
 st.header(t["section1"])
 
 col1, col2 = st.columns(2)
@@ -106,7 +209,7 @@ with col2:
 
 st.divider()
 
-# ====================== SEKCJA 2: CEL I PREFERENCJE ======================
+# ====================== SEKCJA 2 ======================
 st.header(t["section2"])
 
 cel = st.selectbox(t["goal"], t["goals"])
@@ -122,16 +225,14 @@ stan_reki = st.selectbox(t["arm"], t["arm_options"])
 
 st.divider()
 
-# ====================== GENEROWANIE ======================
 if st.button(t["button"], type="primary", use_container_width=True):
 
-    bmi = waga / ((wzrost / 100) ** 2)
+    bmi = round(waga / ((wzrost / 100) ** 2), 1)
     has_bands = "Resistance bands" in sprzet
     has_medball = "Medicine ball" in sprzet
     has_weights = "Weights / Gym" in sprzet
     has_cardio = "Walking / Bike / Running" in sprzet
 
-    # Liczba sesji
     if czas_tyg < 120:
         sesje = 2
     elif czas_tyg < 250:
@@ -142,70 +243,55 @@ if st.button(t["button"], type="primary", use_container_width=True):
 
     # Fokus
     if lang == "Polski":
-        pos_focus = {
-            "Pitcher (miotacz)": "stabilizacja barku, siła rotacyjna, nogi + core",
-            "Catcher (łapacz)": "siła nóg, mobilność bioder, wytrzymałość w przysiadzie",
-            "Infielder (wewnętrzny)": "zwinność, eksplozywność, stabilizacja core",
-            "Outfielder (zapolowy)": "prędkość, moc rzutowa, kondycja"
-        }
-        base = pos_focus.get(pozycja, "ogólna sprawność")
-        focus = f"{base} | Cel: {cel} | Intensywność: {intensywnosc}"
+        focus = f"{pozycja} | Cel: {cel} | Intensywność: {intensywnosc}"
     else:
-        pos_focus = {
-            "Pitcher": "shoulder stability, rotational strength, legs + core",
-            "Catcher": "leg strength, hip mobility, squat endurance",
-            "Infielder": "agility, explosiveness, core stability",
-            "Outfielder": "speed, throwing power, conditioning"
-        }
-        base = pos_focus.get(pozycja, "general fitness")
-        focus = f"{base} | Goal: {cel} | Intensity: {intensywnosc}"
+        focus = f"{pozycja} | Goal: {cel} | Intensity: {intensywnosc}"
 
-    # Ćwiczenia
+    # Dobór ćwiczeń
     arm_bad = stan_reki in t["arm_options"][2:]
-    exercises = []
+    selected = []
 
     if has_weights:
-        exercises += ["Goblet / Front Squat", "Romanian Deadlift", "Bulgarian Split Squat", "Hip Thrust"]
+        selected += ["Goblet / Front Squat", "Romanian Deadlift", "Bulgarian Split Squat", "Hip Thrust"]
     else:
-        exercises += ["Bodyweight Squat", "Reverse Lunges", "Single-leg RDL", "Glute Bridge"]
+        selected += ["Bodyweight Squat", "Reverse Lunges", "Single-leg RDL", "Glute Bridge"]
 
-    exercises += ["Dead Bug", "Side Plank", "Pallof Press"]
+    selected += ["Dead Bug", "Side Plank", "Pallof Press"]
 
     if not arm_bad:
         if has_weights:
-            exercises += ["Dumbbell Shoulder Press", "Bent-over Row"]
+            selected += ["Dumbbell Shoulder Press", "Bent-over Row"]
         if has_bands:
-            exercises += ["Band Face Pulls", "Band External Rotations", "Band Rows"]
+            selected += ["Band Face Pulls", "Band External Rotations", "Band Rows"]
         if has_medball:
-            exercises += ["Med Ball Rotational Throws", "Med Ball Slams"]
+            selected += ["Med Ball Rotational Throws", "Med Ball Slams"]
         if not has_weights and not has_bands:
-            exercises += ["Push-ups", "Inverted Rows"]
+            selected += ["Push-ups", "Inverted Rows"]
     else:
-        exercises += ["Only light shoulder mobility (no loading)" if lang == "English" else "Tylko lekka mobilność barku (bez obciążenia)"]
+        selected += ["Band Face Pulls"] if has_bands else []
 
-    # Dostosowanie do intensywności
+    # Intensywność
     if "Niska" in intensywnosc or "Low" in intensywnosc:
-        serie_info = "2 serie × 10–15 powtórzeń (lekko)" if lang == "Polski" else "2 sets × 10–15 reps (light)"
+        serie_info = "2 sets x 10-15 reps (light)" if lang == "English" else "2 serie x 10-15 powtórzeń (lekko)"
     elif "Wysoka" in intensywnosc or "High" in intensywnosc:
-        serie_info = "4 serie × 5–8 powtórzeń (ciężko)" if lang == "Polski" else "4 sets × 5–8 reps (heavy)"
+        serie_info = "4 sets x 5-8 reps (heavy)" if lang == "English" else "4 serie x 5-8 powtórzeń (ciężko)"
     else:
-        serie_info = "3 serie × 8–12 powtórzeń" if lang == "Polski" else "3 sets × 8–12 reps"
+        serie_info = "3 sets x 8-12 reps" if lang == "English" else "3 serie x 8-12 powtórzeń"
 
     # ---------- WYŚWIETLENIE ----------
     st.success(t["success"])
 
     st.subheader(t["summary"])
-    summary_text = f"""
-**{t['position']}:** {pozycja}  
-**{t['age']} / {t['gender']}:** {wiek} / {plec}  
-**{t['height']} / {t['weight']}:** {wzrost} cm / {waga} kg (BMI ≈ {bmi:.1f})  
-**{t['goal']}:** {cel}  
-**{t['intensity']}:** {intensywnosc}  
-**Czas tygodniowy:** {czas_tyg} min → {sesje} sesje × ~{dlugosc} min  
-**Dni gry:** {', '.join(dni_gry) if dni_gry else '-'}  
-**Stan ręki:** {stan_reki}
-"""
-    st.markdown(summary_text)
+    st.markdown(f"""
+    - **{t['position']}:** {pozycja}  
+    - **{t['age']} / {t['gender']}:** {wiek} / {plec}  
+    - **{t['height']} / {t['weight']}:** {wzrost} cm / {waga} kg (BMI {bmi})  
+    - **{t['goal']}:** {cel}  
+    - **{t['intensity']}:** {intensywnosc}  
+    - **Czas:** {czas_tyg} min/tydzień → {sesje} sesje × ~{dlugosc} min  
+    - **Dni gry:** {', '.join(dni_gry) if dni_gry else '-'}  
+    - **Stan ręki:** {stan_reki}
+    """)
 
     st.subheader(t["focus"])
     st.info(focus)
@@ -216,38 +302,46 @@ if st.button(t["button"], type="primary", use_container_width=True):
     if not training_days:
         training_days = all_days[:sesje]
 
-    plan_lines = []
+    plan_for_pdf = []
     for i, day in enumerate(training_days):
         st.markdown(f"### {day} (~{dlugosc} min)")
         if i % 2 == 0:
-            st.markdown(f"**Siła / Strength** – {serie_info}")
-            for ex in exercises[:6]:
+            st.markdown(f"**Strength** – {serie_info}")
+            for ex in selected[:6]:
                 st.markdown(f"- {ex}")
-                plan_lines.append(f"{day} - Strength: {ex}")
+                plan_for_pdf.append(f"{day}: {ex}")
         else:
-            st.markdown("**Kondycja + mobilność / Conditioning + mobility**")
+            st.markdown("**Conditioning + Mobility**")
             if has_cardio:
-                st.markdown("- Easy run / bike / walk 15–25 min")
-            st.markdown("- Dynamic mobility + core")
-            plan_lines.append(f"{day} - Conditioning + mobility")
+                st.markdown("- Easy run / bike / walk 15-25 min")
+            st.markdown("- Dynamic mobility + core work")
+            plan_for_pdf.append(f"{day}: Conditioning + Mobility")
 
     if dni_gry:
         st.markdown("---")
-        msg = f"**Dni gry ({', '.join(dni_gry)}):** tylko lekka mobilność i regeneracja." if lang == "Polski" else f"**Playing days ({', '.join(dni_gry)}):** only light mobility and recovery."
-        st.markdown(msg)
+        st.markdown(f"**Playing days ({', '.join(dni_gry)}):** only light mobility and recovery.")
+
+    # ---------- SŁOWNIK ĆWICZEŃ ----------
+    st.subheader(t["library"])
+    for ex in selected:
+        if ex in EXERCISES:
+            data = EXERCISES[ex]
+            with st.expander(f"▶ {ex}"):
+                st.write(data["pl"] if lang == "Polski" else data["en"])
+                st.markdown(f"[🎬 YouTube Tutorial]({data['yt']})")
 
     st.subheader(t["notes"])
-    st.markdown("- Zawsze rozgrzewka 8–12 min\n- Słuchaj ciała, szczególnie ręki\n- Regeneracja: sen + białko")
+    st.markdown("- Always warm up 8-12 minutes\n- Listen to your body, especially the arm\n- Sleep + protein = recovery")
     st.warning(t["disclaimer"])
 
-    # ====================== PDF ======================
+    # ====================== PDF (zawsze po angielsku + ASCII) ======================
     class PDF(FPDF):
         def header(self):
             self.set_font("Helvetica", "B", 16)
-            self.cell(0, 10, t["pdf_title"], ln=True, align="C")
+            self.cell(0, 10, "Baseball Training Plan", ln=True, align="C")
             self.set_font("Helvetica", "", 10)
             self.cell(0, 8, datetime.now().strftime("%Y-%m-%d"), ln=True, align="C")
-            self.ln(5)
+            self.ln(4)
 
         def footer(self):
             self.set_y(-15)
@@ -257,36 +351,46 @@ if st.button(t["button"], type="primary", use_container_width=True):
     pdf = PDF()
     pdf.add_page()
     pdf.set_auto_page_break(auto=True, margin=15)
-    pdf.set_font("Helvetica", "", 11)
+    pdf.set_font("Helvetica", size=11)
 
-    def add_line(text):
-        pdf.multi_cell(0, 7, text)
+    def clean(text):
+        # usuwa polskie znaki żeby nie było błędów
+        replacements = str.maketrans("ąćęłńóśźżĄĆĘŁŃÓŚŹŻ", "acelnoszzACELNOSZZ")
+        return str(text).translate(replacements)
 
-    add_line(f"Position: {pozycja}")
-    add_line(f"Age / Gender: {wiek} / {plec}")
-    add_line(f"Height / Weight: {wzrost} cm / {waga} kg")
-    add_line(f"Goal: {cel}")
-    add_line(f"Intensity: {intensywnosc}")
-    add_line(f"Weekly time: {czas_tyg} min ({sesje} sessions)")
-    add_line(f"Playing days: {', '.join(dni_gry) if dni_gry else '-'}")
-    add_line(f"Arm condition: {stan_reki}")
-    add_line("")
-    add_line(f"Main focus: {focus}")
-    add_line("")
-    add_line("Weekly plan:")
-    for line in plan_lines:
-        add_line(f"- {line}")
-    add_line("")
-    add_line("Exercises used:")
-    for ex in exercises:
-        add_line(f"- {ex}")
-    add_line("")
-    add_line(t["disclaimer"])
+    pdf.multi_cell(0, 7, clean(f"Position: {pozycja}"))
+    pdf.multi_cell(0, 7, clean(f"Age / Gender: {wiek} / {plec}"))
+    pdf.multi_cell(0, 7, clean(f"Height / Weight: {wzrost} cm / {waga} kg"))
+    pdf.multi_cell(0, 7, clean(f"Goal: {cel}"))
+    pdf.multi_cell(0, 7, clean(f"Intensity: {intensywnosc}"))
+    pdf.multi_cell(0, 7, clean(f"Weekly time: {czas_tyg} min ({sesje} sessions)"))
+    pdf.multi_cell(0, 7, clean(f"Playing days: {', '.join(dni_gry) if dni_gry else '-'}"))
+    pdf.multi_cell(0, 7, clean(f"Arm condition: {stan_reki}"))
+    pdf.ln(4)
+    pdf.set_font("Helvetica", "B", 12)
+    pdf.multi_cell(0, 7, "Weekly Plan:")
+    pdf.set_font("Helvetica", size=11)
+    for line in plan_for_pdf:
+        pdf.multi_cell(0, 7, clean(f"- {line}"))
+    pdf.ln(4)
+    pdf.set_font("Helvetica", "B", 12)
+    pdf.multi_cell(0, 7, "Exercises + Video Links:")
+    pdf.set_font("Helvetica", size=10)
+    for ex in selected:
+        if ex in EXERCISES:
+            pdf.multi_cell(0, 6, clean(f"{ex}"))
+            pdf.multi_cell(0, 6, clean(f"  {EXERCISES[ex]['en']}"))
+            pdf.multi_cell(0, 6, clean(f"  Video: {EXERCISES[ex]['yt']}"))
+            pdf.ln(2)
 
-    pdf_output = pdf.output()
+    pdf.ln(4)
+    pdf.set_font("Helvetica", "I", 9)
+    pdf.multi_cell(0, 6, "This is a simplified plan. It does not replace advice from a coach or physiotherapist.")
+
+    pdf_bytes = pdf.output()
     st.download_button(
         label=t["download_pdf"],
-        data=pdf_output,
+        data=pdf_bytes,
         file_name=f"baseball_plan_{datetime.now().strftime('%Y%m%d')}.pdf",
         mime="application/pdf",
         use_container_width=True
