@@ -98,7 +98,6 @@ DAY_MAP = {
     "Thursday": "Thursday", "Friday": "Friday", "Saturday": "Saturday", "Sunday": "Sunday"
 }
 
-# Klucze ćwiczeń po angielsku (do logiki), ale wyświetlamy przetłumaczone nazwy
 EXERCISES = {
     "Goblet / Front Squat": {
         "pl_name": "Goblet Squat / Przysiad z ciężarem",
@@ -205,13 +204,9 @@ EXERCISES = {
         "en": "Rotational med ball throws.",
         "yt": "https://www.youtube.com/watch?v=1xqZf1zqZ2k"
     },
-    "Med Ball
-
-Slams": {
+    "Med Ball Slams": {
         "pl_name": "Uderzenia piłką lekarską",
-        "en_name": "Med Ball
-
-Slams",
+        "en_name": "Med Ball Slams",
         "pl": "Uderzenia piłką lekarską o podłogę.",
         "en": "Medicine ball slams.",
         "yt": "https://www.youtube.com/watch?v=2xX4zQ3zqZ0"
@@ -274,9 +269,8 @@ st.divider()
 
 if st.button(t["button"], type="primary", use_container_width=True):
 
-    # Logika sprzętu (sprawdzamy po fragmentach nazw)
     has_bands = any("band" in s.lower() or "gumy" in s.lower() for s in sprzet)
-    has_medball = any("medicine" in s.lower() or "lekarska" in s.lower() or "med ball" in s.lower() for s in sprzet)
+    has_medball = any("medicine" in s.lower() or "lekarska" in s.lower() for s in sprzet)
     has_weights = any("weights" in s.lower() or "siłownia" in s.lower() or "ciężary" in s.lower() for s in sprzet)
     has_cardio = any("walking" in s.lower() or "bike" in s.lower() or "running" in s.lower() or "chodzenie" in s.lower() or "rower" in s.lower() or "bieganie" in s.lower() for s in sprzet)
 
@@ -299,7 +293,9 @@ if st.button(t["button"], type="primary", use_container_width=True):
         if has_bands:
             selected += ["Band Face Pulls", "Band External Rotations", "Band Rows"]
         if has_medball:
-            selected += ["Med Ball Rotational Throws", "Med Ball Slams"]
+            selected += ["Med Ball Rotational Throws", "Med Ball
+
+Slams"]
         if not has_weights and not has_bands:
             selected += ["Push-ups", "Inverted Rows"]
     elif has_bands:
@@ -320,7 +316,6 @@ if st.button(t["button"], type="primary", use_container_width=True):
         else:
             serie_info = "3 sets × 8-12"
 
-    # ---------- WYŚWIETLENIE ----------
     st.success(t["success"])
 
     st.subheader(t["summary"])
@@ -362,7 +357,7 @@ if st.button(t["button"], type="primary", use_container_width=True):
 
     st.warning(t["disclaimer"])
 
-    # PDF zostaje po angielsku (działa stabilnie)
+    # PDF
     def safe(txt):
         return str(txt).encode("ascii", "ignore").decode("ascii")
 
